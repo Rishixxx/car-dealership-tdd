@@ -1,13 +1,11 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { validateRegisterInput, validateLoginInput } from '../validators/auth';
+import { signToken } from '../utils/jwt';
 
 const router = Router();
 
 const SALT_ROUNDS = 10;
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
-const JWT_EXPIRES_IN = '24h';
 
 /**
  * POST /api/auth/register
@@ -87,12 +85,12 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Generate JWT
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
+    // Generate JWT using utility
+    const token = signToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
 
     // Return token and user data (without password)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
