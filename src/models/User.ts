@@ -10,9 +10,21 @@ export interface User {
   updated_at: string;
 }
 
+export type UserWithoutPassword = Omit<User, 'password'>;
+
 export type CreateUserInput = Pick<User, 'email' | 'password' | 'name'> & {
   role?: 'user' | 'admin';
 };
+
+/**
+ * Strip the password field from a user object.
+ * Used when returning user data in API responses.
+ */
+export function stripPassword(user: User): UserWithoutPassword {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+}
 
 /**
  * Find a user by their email address.
@@ -32,7 +44,7 @@ export async function findById(id: number): Promise<User | undefined> {
  * Create a new user in the database.
  * Returns the created user (without password).
  */
-export async function create(input: CreateUserInput): Promise<Omit<User, 'password'>> {
+export async function create(input: CreateUserInput): Promise<UserWithoutPassword> {
   const [id] = await db('users').insert({
     email: input.email,
     password: input.password,
@@ -45,7 +57,5 @@ export async function create(input: CreateUserInput): Promise<Omit<User, 'passwo
     throw new Error('Failed to create user');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+  return stripPassword(user);
 }
