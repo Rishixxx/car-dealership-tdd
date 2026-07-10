@@ -1,15 +1,29 @@
 import express from 'express';
 import cors from 'cors';
+import { Knex } from 'knex';
 
-const app = express();
+/**
+ * Create and configure the Express application.
+ * Accepts an optional Knex instance for dependency injection (used in tests).
+ */
+export function createApp(db?: Knex) {
+  const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+  // Middleware
+  app.use(cors());
+  app.use(express.json());
 
-// Health check
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+  // Make db available to route handlers via app.locals
+  if (db) {
+    app.locals.db = db;
+  }
 
-export default app;
+  // Health check
+  app.get('/api/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  return app;
+}
+
+export default createApp;

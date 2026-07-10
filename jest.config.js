@@ -4,7 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.ts'],
-  setupFilesAfterSetup: [],
   verbose: true,
   forceExit: true,
   clearMocks: true,
