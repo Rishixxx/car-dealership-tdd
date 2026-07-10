@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import { validateRegisterInput } from '../validators/auth';
 
 const router = Router();
 
@@ -14,23 +15,13 @@ router.post('/register', async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
     const db = req.app.locals.db;
 
-    // Input validation
-    if (!name || typeof name !== 'string' || name.trim().length === 0) {
-      return res.status(400).json({ error: 'Name is required' });
-    }
-
-    if (!email || typeof email !== 'string') {
-      return res.status(400).json({ error: 'Email is required' });
-    }
-
-    // Basic email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
-    }
-
-    if (!password || typeof password !== 'string' || password.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    // Validate input using dedicated validator
+    const errors = validateRegisterInput({ name, email, password });
+    if (errors.length > 0) {
+      return res.status(400).json({
+        error: errors[0].message,
+        details: errors,
+      });
     }
 
     // Check for duplicate email
