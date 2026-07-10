@@ -1,10 +1,13 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { validateRegisterInput } from '../validators/auth';
+import jwt from 'jsonwebtoken';
+import { validateRegisterInput, validateLoginInput } from '../validators/auth';
 
 const router = Router();
 
 const SALT_ROUNDS = 10;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+const JWT_EXPIRES_IN = '24h';
 
 /**
  * POST /api/auth/register
@@ -50,6 +53,55 @@ router.post('/register', async (req: Request, res: Response) => {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Registration error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /api/auth/login
+ * Authenticate user and return a JWT token.
+ */
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const db = req.app.locals.db;
+
+    // Validate input
+    const errors = validateLoginInput({ email, password });
+    if (errors.length > 0) {
+      return res.status(400).json({
+        error: errors[0].message,
+        details: errors,
+      });
+    }
+
+    // Find user by email
+    const user = await db('users').where({ email }).first();
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    // Return token and user data (without password)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _pwd, ...userWithoutPassword } = user;
+
+    return res.status(200).json({ token, user: userWithoutPassword });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Login error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
