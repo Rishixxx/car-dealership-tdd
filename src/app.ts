@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { Knex } from 'knex';
+import authRoutes from './routes/auth';
 
 /**
  * Create and configure the Express application.
@@ -22,6 +23,9 @@ export function createApp(db?: Knex) {
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
+
+  // Routes
+  app.use('/api/auth', authRoutes);
 
   return app;
 }
