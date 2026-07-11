@@ -7,6 +7,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
     "test": "jest --verbose --forceExit --detectOpenHandles",
     "test:watch": "jest --watch --verbose",
     "test:coverage": "jest --coverage --verbose --forceExit --detectOpenHandles",
