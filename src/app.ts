@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { Knex } from 'knex';
 import authRoutes from './routes/auth';
+import vehicleRoutes from './routes/vehicles';
 import { authenticate, authorize } from './middleware/auth';
 
 /**
@@ -27,6 +28,7 @@ export function createApp(db?: Knex) {
 
   // Public routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/vehicles', vehicleRoutes);
 
   // Protected routes (require valid JWT)
   app.get('/api/protected/profile', authenticate, (req, res) => {

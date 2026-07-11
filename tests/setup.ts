@@ -29,7 +29,7 @@ export async function teardownTestDb(): Promise<void> {
 export async function cleanTables(): Promise<void> {
   if (!testDb) return;
 
-  const tables = ['users'];
+  const tables = ['vehicles', 'users'];
   for (const table of tables) {
     await testDb(table).del();
   }
